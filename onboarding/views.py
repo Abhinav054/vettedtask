@@ -7,6 +7,7 @@ from django.contrib.auth.models import Group
 from .models import *
 from django.http import HttpResponseRedirect
 from .utils import *
+from django.contrib.auth import authenticate
 # Create your views here.
 
 
@@ -33,7 +34,6 @@ class CompanyCreateView(View):
             return  HttpResponseRedirect('/ob/register/company')
 
 
-
 def companyDetailView(request,id):
     company = Company.objects.get(pk=id)
     return render(request,'companydetail.html',{'company':company})
@@ -41,8 +41,15 @@ def companyDetailView(request,id):
 
 
 class EmployeeCreateView(View):
-    def get(self,request):
-        form = EmployeeForm()
+
+    def get(self,request, id=None):
+        if id:
+            form = EmployeeForm()
+            form.companyId = id
+        else:
+            form = EmployeeForm()
+            company = request.user.company_set.get()
+            form.companyId=company.pk
         return render(request,'employeeregister.html',{'form':form})
     
     @login_required
@@ -52,10 +59,35 @@ class EmployeeCreateView(View):
             password = request.POST['password']
             profile = request.POST['profile']
             username = request.POST['username']
-            company = Company.objects.get(admin=request.user)
-            #create user and add it to the companyadmin groups
-            return HttpResponseRedirect('/ob/company/'+str(company.pk))
+            companyId = request.POST['companyId']
+            #create employee and add it to the 
+            createEmployee(email,password,username,companyId,profile)
+            if request.user:
+                return HttpResponseRedirect('/ob/company/'+str(companyId))
+            else:
+                return HttpResponseRedirect('/ob/login/')
         except Exception as e:
             print(e)
             return  HttpResponseRedirect('/ob/register/company')
+
+
+
+class LoginView(View):
+    def get(self,request):
+        form = LoginForm()
+        return render(request, 'login.html',{'form':form})
+    
+    def post(request):
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(username=username, password=password)
+        redirecturl = getRedirectUrl(user)
+        return HttpResponseRedirect(redirecturl)
+
+
+@login_required
+def employeeDetailView(request,id):
+    employee = Employee.objects.get(pk=id)
+    return render('employeedetail.html',{'employee':employee})
+
 

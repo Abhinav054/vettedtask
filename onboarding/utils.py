@@ -2,15 +2,32 @@ from .models import *
 from django.contrib.auth.models import Group
 
 
-def createEmployee(email,password,username,company,profile):
+def createEmployee(email,password,username,companyId,profile):
     # create user
     try:
         user = User.objects.create_user(email=email,password=password,username=username)
         employee = Group.objects.get_by_natural_key(name="employees")
         user.groups.add(employee)
         # create employee
+        company = Company.objects.get(pk=companyId)
         employee = Employee.objects.create(user=user,company=company,profile=profile)
         return True
     except Exception as e:
         return False
 
+
+def getRedirectUrl(user):
+    admin = Group.objects.get_by_natural_key(name="superadmin")
+    company_admin = Group.objects.get_by_natural_key(name="company_admins")
+    employees = Group._check_ordering.get_by_natural_key(name="employees")
+    usergroups = user.objects.groups.all()
+    if admin in usergroups:
+        return ""
+    elif company_admin in usergroups:
+        company = user.company_set.get()
+        return "/ob/company/"+company.pk
+    elif employees in usergroups:
+        employee = user.employee_set.get()
+        return "/ob/employee/"+employee.pk
+    else:
+        return "/ob/login"
