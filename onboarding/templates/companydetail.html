@@ -1,4 +1,8 @@
 <div>
-    It works
     {{company.company_name}}
+</div>
+<div>
+    {% for employee in company.employees.all %}
+        {{employee.profile}}
+    {% endfor %}
 </div>

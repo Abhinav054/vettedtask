@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 from .models import *
 from django.http import HttpResponseRedirect
 from .utils import *
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate,login
 # Create your views here.
 
 
@@ -43,16 +43,15 @@ def companyDetailView(request,id):
 class EmployeeCreateView(View):
 
     def get(self,request, id=None):
+        print(request.user.username)
         if id:
             form = EmployeeForm()
             form.companyId = id
         else:
-            form = EmployeeForm()
-            company = request.user.company_set.get()
-            form.companyId=company.pk
+            company = request.user.companies.get()
+            form = EmployeeForm({'companyId':company.pk})
         return render(request,'employeeregister.html',{'form':form})
     
-    @login_required
     def post(self,request):
         try:
             email = request.POST['email']
@@ -61,6 +60,7 @@ class EmployeeCreateView(View):
             username = request.POST['username']
             companyId = request.POST['companyId']
             #create employee and add it to the 
+            print(companyId)
             createEmployee(email,password,username,companyId,profile)
             if request.user:
                 return HttpResponseRedirect('/ob/company/'+str(companyId))
@@ -77,12 +77,16 @@ class LoginView(View):
         form = LoginForm()
         return render(request, 'login.html',{'form':form})
     
-    def post(request):
+    def post(self,request):
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(username=username, password=password)
-        redirecturl = getRedirectUrl(user)
-        return HttpResponseRedirect(redirecturl)
+        if user:
+            redirecturl = getRedirectUrl(user)
+            login(request,user)
+            return HttpResponseRedirect(redirecturl)
+        else:
+            return HttpResponseRedirect('/ob/login')
 
 
 @login_required

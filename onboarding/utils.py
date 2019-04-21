@@ -13,21 +13,20 @@ def createEmployee(email,password,username,companyId,profile):
         employee = Employee.objects.create(user=user,company=company,profile=profile)
         return True
     except Exception as e:
-        return False
-
+        raise e
 
 def getRedirectUrl(user):
     admin = Group.objects.get_by_natural_key(name="superadmin")
     company_admin = Group.objects.get_by_natural_key(name="company_admins")
-    employees = Group._check_ordering.get_by_natural_key(name="employees")
-    usergroups = user.objects.groups.all()
+    employees = Group.objects.get_by_natural_key(name="employees")
+    usergroups = user.groups.all()
     if admin in usergroups:
         return ""
     elif company_admin in usergroups:
-        company = user.company_set.get()
-        return "/ob/company/"+company.pk
+        company = user.companies.get()
+        return "/ob/company/"+str(company.pk)
     elif employees in usergroups:
-        employee = user.employee_set.get()
-        return "/ob/employee/"+employee.pk
+        employee = user.user.get()
+        return "/ob/employee/"+str(employee.pk)
     else:
         return "/ob/login"
