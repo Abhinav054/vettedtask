@@ -1,8 +1,49 @@
-<div>
-    {{company.company_name}}
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <h2>{{company.company_name}}</h2>
 </div>
-<div>
-    {% for employee in company.employees.all %}
-        {{employee.profile}}
-    {% endfor %}
+<div class="row">
+    <div class="col-md-4">
+        <a href="/ob/register/employee/"><button>Add Employee</button></a>
+    </div>
+    <div class="col-md-8">
+        <h3>Invite link : http://localhost:8000/ob/register/employee/{{company.pk}}</h3> 
+    </div>
 </div>
+<div class="row">
+    <table class="table">
+        <thead>
+            <th scope="col">
+                Username
+            </th>
+            <th scope="col">
+                Email
+            </th>
+            <th>
+                Profile
+            </th>
+            <th>
+                Edit
+            </th>
+        </thead>
+        {% for employee in company.employees.all %}
+                    <tr>
+                        <td>
+                            {{employee.user.username}}
+                        </td>
+                        <td>
+                            {{employee.user.email}}
+                        </td>
+                        <td>
+                                {{employee.profile}}
+                        </td>
+                        <td>
+                            <button> Edit</button>
+                        </td>
+                    </tr>
+   
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

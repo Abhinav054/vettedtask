@@ -1,17 +1,9 @@
-{% load static %}
+{% extends 'base.html' %}
 {% load crispy_forms_tags %}
-<html>
-    <head>
-        <title>Register Employee</title>
-        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-    </head>
-    <body>
-            <form action="/ob/register/employee/" method="post">
-                {% csrf_token %}
-                {{form | crispy}}
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                  </form>
-
-    </body>
-</html>
+{% block content %}
+<form action="/ob/register/employee/" method="post">
+    {% csrf_token %}
+    {{form | crispy}}
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}
