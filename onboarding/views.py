@@ -33,7 +33,7 @@ class CompanyCreateView(View):
             print(e)
             return  HttpResponseRedirect('/ob/register/company')
 
-
+@login_required
 def companyDetailView(request,id):
     company = Company.objects.get(pk=id)
     return render(request,'companydetail.html',{'company':company})
@@ -51,7 +51,7 @@ class EmployeeCreateView(View):
             company = request.user.companies.get()
             form = EmployeeForm({'companyId':company.pk})
         return render(request,'employeeregister.html',{'form':form})
-    
+    # have a token for invite to increase security
     def post(self,request):
         try:
             email = request.POST['email']
@@ -68,7 +68,7 @@ class EmployeeCreateView(View):
                 return HttpResponseRedirect('/ob/login/')
         except Exception as e:
             print(e)
-            return  HttpResponseRedirect('/ob/register/company')
+            return  HttpResponseRedirect('/ob/login')
 
 
 
@@ -95,3 +95,18 @@ def employeeDetailView(request,id):
     return render('employeedetail.html',{'employee':employee})
 
 
+class EmployeeEditView(View):
+    
+    def get(self,request,id):
+        employee = Employee.objects.get(pk=id)
+        form  = EmployEditForm({'profile':employee.profile})
+        return render(request,'employeeedit.html',{'form':form,'employee':employee})
+    
+    def post(self,request,id):
+        profile = request.POST['profile']
+        employee = Employee.objects.get(pk=id)
+        employee.profile = profile
+        employee.save()
+        redirecturl = getRedirectUrl(request.user)
+        return HttpResponseRedirect(redirecturl)
+        
