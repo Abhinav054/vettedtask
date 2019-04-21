@@ -26,6 +26,9 @@
             <th>
                 Edit
             </th>
+            <th>
+                Delete
+            </th>
         </thead>
         {% for employee in company.employees.all %}
                     <tr>
@@ -40,6 +43,9 @@
                         </td>
                         <td>
                            <a href="/ob/edit/employee/{{employee.pk}}/"> <button> Edit</button></a>
+                        </td>
+                        <td>
+                            <a href="/ob/delete/employee/{{employee.pk}}/"><button>Delete</button></a>
                         </td>
                     </tr>
    

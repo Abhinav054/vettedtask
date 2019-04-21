@@ -30,3 +30,12 @@ def getRedirectUrl(user):
         return "/ob/employee/"+str(employee.pk)
     else:
         return "/ob/login"
+
+def verifyEmployee(user,employee):
+    if employee.user.id==user.id:
+        return True
+    else:
+        if user.companies.get().pk==employee.company.pk:
+            return True
+        else:
+            return False

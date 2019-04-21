@@ -8,6 +8,8 @@ from .models import *
 from django.http import HttpResponseRedirect
 from .utils import *
 from django.contrib.auth import authenticate,login
+from django.core.exceptions import PermissionDenied
+from django.utils.decorators import method_decorator
 # Create your views here.
 
 
@@ -33,10 +35,15 @@ class CompanyCreateView(View):
             print(e)
             return  HttpResponseRedirect('/ob/register/company')
 
+
+#Could have done better job using the request user but too late
 @login_required
 def companyDetailView(request,id):
     company = Company.objects.get(pk=id)
-    return render(request,'companydetail.html',{'company':company})
+    if company.admin.id==request.user.id:
+        return render(request,'companydetail.html',{'company':company})
+    else:
+        raise PermissionDenied('Not authorized to access the company')
 
 
 
@@ -95,18 +102,35 @@ def employeeDetailView(request,id):
     return render('employeedetail.html',{'employee':employee})
 
 
+
+
+
 class EmployeeEditView(View):
-    
+
+    @method_decorator(login_required)
     def get(self,request,id):
         employee = Employee.objects.get(pk=id)
         form  = EmployEditForm({'profile':employee.profile})
         return render(request,'employeeedit.html',{'form':form,'employee':employee})
-    
+
+
+
+    @method_decorator(login_required)
     def post(self,request,id):
         profile = request.POST['profile']
         employee = Employee.objects.get(pk=id)
-        employee.profile = profile
-        employee.save()
-        redirecturl = getRedirectUrl(request.user)
+        if verifyEmployee(request.user,employee):
+            employee.profile = profile
+            employee.save()
+            redirecturl = getRedirectUrl(request.user)
+        else:
+            raise PermissionDenied('You cant edit this employee')
         return HttpResponseRedirect(redirecturl)
         
+@login_required
+def employeeDeleteView(request,id):
+    employee = Employee.objects.get(pk=id)
+    if employee.company.pk==request.user.companies.get().pk:
+        employee.delete()
+        url = getRedirectUrl(request.user)
+        return HttpResponseRedirect(url)
